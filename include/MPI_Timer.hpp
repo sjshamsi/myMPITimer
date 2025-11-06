@@ -14,7 +14,7 @@
 namespace MPITiming
 {
 
-constexpr int DEFAULT_ROOT {0};
+constexpr int DEFAULT_ROOT{0}, DEFAULT_PRECISION{3};
 
 
 
@@ -265,11 +265,11 @@ std::ostream & Timekeeper::print_subject_summary(std::string_view subject, std::
   const double tot_min{*tot_min_it}, tot_max{*tot_max_it}, avg_min{*avg_min_it}, avg_max{*avg_max_it};
 
   const double tot_sq_sum = std::inner_product(tot_durations.begin(), tot_durations.end(), tot_durations.begin(), 0.0);
-  const double tot_variance = tot_sq_sum / tot_durations.size() - (tot_mean * tot_mean);
+  const double tot_variance = tot_sq_sum / static_cast<double>(tot_durations.size()) - (tot_mean * tot_mean);
   const double tot_stdv = std::sqrt(tot_variance > 0 ? tot_variance : 0.0);
 
   const double avg_sq_sum = std::inner_product(avg_durations.begin(), avg_durations.end(), avg_durations.begin(), 0.0);
-  const double avg_variance = avg_sq_sum / avg_durations.size() - (avg_mean * avg_mean);
+  const double avg_variance = avg_sq_sum / static_cast<double>(avg_durations.size()) - (avg_mean * avg_mean);
   const double avg_stdv = std::sqrt(avg_variance > 0 ? avg_variance : 0.0);
   
   os << tot_mean  << delim
