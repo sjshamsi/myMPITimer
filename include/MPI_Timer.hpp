@@ -292,7 +292,7 @@ std::ostream & Timekeeper::print_all_summaries(std::ostream& os, std::string_vie
     if (rank == root) os << delim;
     print_subject_summary<TU>(subject, os, delim);
   }
-  if (rank == root) os << "\n";
+  // if (rank == root) os << "\n";
   return os;
 }
 
