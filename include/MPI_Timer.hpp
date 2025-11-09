@@ -326,6 +326,7 @@ ScopedTimer::~ScopedTimer() {
 class Stopwatch {
 public:
   explicit Stopwatch(Timekeeper& timekeeper) : tk(timekeeper) {}
+  ~Stopwatch();
   void start(std::string_view timing_subject);
   void stop();
 
@@ -333,7 +334,7 @@ private:
   Timekeeper& tk;
   time_t start_time;
   std::string_view subject;
-  bool in_progress {false};
+  bool in_progress{false};
 };
 
 
@@ -341,8 +342,9 @@ void Stopwatch::start(std::string_view timing_subject) {
   start_time = clock_t::now();
 
   if (in_progress) {
-    if (tk.rank == tk.root) std::cerr << "Timing already in progress/done for this timer! Use a new instance?\n";
-    MPI_Abort(tk.comm, 1);
+    if (tk.rank == tk.root) std::cerr << "ERROR: start() called on a timer which is already in progress/done "
+                                      << "(subject: " << subject << ")! Use another instance?\n";
+    std::exit(EXIT_FAILURE);
   }
 
   in_progress = true;
@@ -354,11 +356,27 @@ void Stopwatch::stop() {
   time_t end_time = clock_t::now();
 
   if (!in_progress) {
-    if (tk.rank == tk.root) std::cerr << "No timing in progress for this timer!\n";
-    MPI_Abort(tk.comm, 1);
+    if (tk.rank == tk.root) std::cerr << "ERROR: stop() called on a timer with no timing in progress!\n";
+    std::exit(EXIT_FAILURE);
   }
 
+  in_progress = false;
   tk.add_timing(end_time - start_time, subject);
 }
+
+
+Stopwatch::~Stopwatch() {
+  time_t end_time = clock_t::now();
+
+  if (in_progress) {
+    if (tk.rank == tk.root) std::cerr << "WARNING: Destructor called on a timer which wasn't stopped "
+                                      << "(subject: " << subject << ")! Stopping the timer and recording the time.\n";
+    std::exit(EXIT_FAILURE);
+  }
+  
+  in_progress = false;
+  tk.add_timing(end_time - start_time, subject);
+}
+
 
 } // namespace MPITiming
