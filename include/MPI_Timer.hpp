@@ -371,11 +371,9 @@ Stopwatch::~Stopwatch() {
   if (in_progress) {
     if (tk.rank == tk.root) std::cerr << "WARNING: Destructor called on a timer which wasn't stopped "
                                       << "(subject: " << subject << ")! Stopping the timer and recording the time.\n";
-    std::exit(EXIT_FAILURE);
+    in_progress = false;
+    tk.add_timing(end_time - start_time, subject);
   }
-  
-  in_progress = false;
-  tk.add_timing(end_time - start_time, subject);
 }
 
 
